@@ -7,6 +7,7 @@ export interface EscalationMessage {
   postedAt: string;
   replyCount: number;
   threadReplies?: string[];
+  permalink: string;
 }
 
 /** AI要約の結果 */

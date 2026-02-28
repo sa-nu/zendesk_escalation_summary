@@ -31,6 +31,12 @@ export async function summarizeEscalations(
     })
     .join("\n\n");
 
+  // メッセージ番号→permalink のマッピングを作成
+  const permalinkMap = new Map<number, string>();
+  messages.forEach((msg, i) => {
+    permalinkMap.set(i + 1, msg.permalink);
+  });
+
   const prompt = `あなたはZendeskエスカレーション分析の専門家です。
 以下は本日（${date}）の #2h_zendesk_escalation チャンネルに投稿されたエスカレーションメッセージの一覧です。
 
@@ -43,8 +49,9 @@ ${formattedMessages}
   "categories": [
     {
       "name": "カテゴリ名（例：アカウント関連、技術的問題、請求関連など）",
-      "count": 件数,
-      "items": ["各エスカレーションの簡潔な説明（1行）"]
+      "items": [
+        {"description": "エスカレーションの簡潔な説明", "messageNumber": 対応するメッセージ番号}
+      ]
     }
   ]
 }
@@ -53,11 +60,14 @@ ${formattedMessages}
 - サマリーは簡潔かつ実用的に
 - カテゴリは内容に応じて3-7個程度に分類
 - 緊急性の高いものがあれば優先的に言及
+- 各itemのmessageNumberは元メッセージの番号（[1], [2]等の数字）を指定してください
+- 1つのメッセージは1つのカテゴリにのみ分類し、重複させないでください
+- 全メッセージ（${messages.length}件）を漏れなく分類してください
 - JSONのみを出力してください`;
 
   const response = await anthropic.messages.create({
     model: "claude-opus-4-6",
-    max_tokens: 2000,
+    max_tokens: 4000,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -77,13 +87,28 @@ ${formattedMessages}
 
   const parsed = JSON.parse(jsonMatch[0]) as {
     summaryText: string;
-    categories?: SummaryCategory[];
+    categories?: {
+      name: string;
+      items: { description: string; messageNumber: number }[];
+    }[];
   };
+
+  // メッセージ番号からpermalinkを解決してSlackリンク付きのitemsに変換
+  const categories: SummaryCategory[] | undefined = parsed.categories?.map((cat) => ({
+    name: cat.name,
+    count: cat.items.length,
+    items: cat.items.map((item) => {
+      const link = permalinkMap.get(item.messageNumber);
+      return link
+        ? `${item.description} <${link}|詳細>`
+        : item.description;
+    }),
+  }));
 
   return {
     date,
     totalCount: messages.length,
     summaryText: parsed.summaryText,
-    categories: parsed.categories,
+    categories,
   };
 }

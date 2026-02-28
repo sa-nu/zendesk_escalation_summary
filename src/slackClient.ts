@@ -28,6 +28,10 @@ export async function fetchEscalationMessages(): Promise<EscalationMessage[]> {
     for (const msg of response.messages ?? []) {
       if (!msg.ts || msg.subtype === "channel_join") continue;
 
+      // このBotが投稿したサマリーメッセージを除外
+      if (msg.text?.includes("エスカレーションサマリー")) continue;
+
+      const tsForUrl = msg.ts.replace(".", "");
       const escalation: EscalationMessage = {
         ts: msg.ts,
         text: msg.text ?? "",
@@ -35,6 +39,7 @@ export async function fetchEscalationMessages(): Promise<EscalationMessage[]> {
         isBot: !!msg.bot_id,
         postedAt: new Date(parseFloat(msg.ts) * 1000).toISOString(),
         replyCount: msg.reply_count ?? 0,
+        permalink: `https://slack.com/archives/${channelId}/p${tsForUrl}`,
       };
 
       if (escalation.replyCount > 0) {
