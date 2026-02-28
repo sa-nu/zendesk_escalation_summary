@@ -39,7 +39,7 @@ export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
       elements: [
         {
           type: "mrkdwn",
-          text: `本日のエスカレーション: *${summary.totalCount}件*`,
+          text: `<!subteam^S0951R6UJMP> 本日のエスカレーション: *${summary.totalCount}件*`,
         },
       ],
     },
