@@ -1,0 +1,17 @@
+{
+  "buildCommand": "",
+  "functions": {
+    "api/cron/summary.ts": {
+      "maxDuration": 60
+    },
+    "api/slack/events.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/summary",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
