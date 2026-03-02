@@ -4,6 +4,9 @@
     "api/cron/summary.ts": {
       "maxDuration": 60
     },
+    "api/cron/weekly-summary.ts": {
+      "maxDuration": 120
+    },
     "api/slack/events.ts": {
       "maxDuration": 60
     }
@@ -12,6 +15,10 @@
     {
       "path": "/api/cron/summary",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-summary",
+      "schedule": "0 0 * * 2"
     }
   ]
 }

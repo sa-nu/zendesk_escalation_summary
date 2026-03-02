@@ -5,16 +5,19 @@ const anthropic = new Anthropic();
 
 /**
  * Claude APIでエスカレーションメッセージを要約する。
+ * @param periodLabel 期間ラベル（デフォルト: "本日"）。週次の場合は "今週" を指定。
  */
 export async function summarizeEscalations(
   messages: EscalationMessage[],
   date: string,
+  periodLabel: string = "本日",
 ): Promise<EscalationSummary> {
   if (messages.length === 0) {
     return {
       date,
       totalCount: 0,
-      summaryText: "本日のエスカレーションはありませんでした。",
+      summaryText: `${periodLabel}のエスカレーションはありませんでした。`,
+      periodLabel,
     };
   }
 
@@ -38,7 +41,7 @@ export async function summarizeEscalations(
   });
 
   const prompt = `あなたはZendeskエスカレーション分析の専門家です。
-以下は本日（${date}）の #2h_zendesk_escalation チャンネルに投稿されたエスカレーションメッセージの一覧です。
+以下は${periodLabel}（${date}）の #2h_zendesk_escalation チャンネルに投稿されたエスカレーションメッセージの一覧です。
 
 ${formattedMessages}
 
@@ -110,5 +113,6 @@ ${formattedMessages}
     totalCount: messages.length,
     summaryText: parsed.summaryText,
     categories,
+    periodLabel,
   };
 }

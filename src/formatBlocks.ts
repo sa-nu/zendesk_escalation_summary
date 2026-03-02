@@ -5,6 +5,8 @@ import type { EscalationSummary } from "./types.js";
  * EscalationSummaryをSlack Block Kit形式にフォーマットする。
  */
 export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
+  const periodLabel = summary.periodLabel ?? "本日";
+
   if (summary.totalCount === 0) {
     return [
       {
@@ -19,7 +21,7 @@ export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: ":white_check_mark: 本日のエスカレーションはありませんでした。",
+          text: `:white_check_mark: ${periodLabel}のエスカレーションはありませんでした。`,
         },
       },
     ];
@@ -39,7 +41,7 @@ export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
       elements: [
         {
           type: "mrkdwn",
-          text: `<!subteam^S0951R6UJMP> 本日のエスカレーション: *${summary.totalCount}件*`,
+          text: `<!subteam^S0951R6UJMP> ${periodLabel}のエスカレーション: *${summary.totalCount}件*`,
         },
       ],
     },

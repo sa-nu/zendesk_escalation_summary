@@ -16,6 +16,8 @@ export interface EscalationSummary {
   totalCount: number;
   summaryText: string;
   categories?: SummaryCategory[];
+  /** 期間ラベル（"本日" or "今週"）。フォーマット時に使用 */
+  periodLabel?: string;
 }
 
 /** カテゴリ別の内訳 */

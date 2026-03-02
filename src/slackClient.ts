@@ -6,12 +6,13 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN);
 const channelId = process.env.SLACK_CHANNEL_ID!;
 
 /**
- * #2h_zendesk_escalation から過去24時間のメッセージを取得する。
+ * #2h_zendesk_escalation から指定時間内のメッセージを取得する。
  * ページネーション対応。スレッド返信も取得。
+ * @param hours 取得対象の時間範囲（デフォルト: 24時間）
  */
-export async function fetchEscalationMessages(): Promise<EscalationMessage[]> {
+export async function fetchEscalationMessages(hours: number = 24): Promise<EscalationMessage[]> {
   const now = Math.floor(Date.now() / 1000);
-  const twentyFourHoursAgo = now - 24 * 60 * 60;
+  const oldest = now - hours * 60 * 60;
 
   const messages: EscalationMessage[] = [];
   let cursor: string | undefined;
@@ -19,7 +20,7 @@ export async function fetchEscalationMessages(): Promise<EscalationMessage[]> {
   do {
     const response = await client.conversations.history({
       channel: channelId,
-      oldest: String(twentyFourHoursAgo),
+      oldest: String(oldest),
       latest: String(now),
       limit: 200,
       cursor,
