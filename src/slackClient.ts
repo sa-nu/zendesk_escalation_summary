@@ -10,8 +10,9 @@ const channelId = process.env.SLACK_CHANNEL_ID!;
  * ページネーション対応。
  * @param hours 取得対象の時間範囲（デフォルト: 24時間）
  * @param fetchThreads スレッド返信を取得するか（デフォルト: true）
+ * @param maxMessages 取得メッセージ数の上限（デフォルト: 無制限）
  */
-export async function fetchEscalationMessages(hours: number = 24, fetchThreads: boolean = true): Promise<EscalationMessage[]> {
+export async function fetchEscalationMessages(hours: number = 24, fetchThreads: boolean = true, maxMessages?: number): Promise<EscalationMessage[]> {
   const now = Math.floor(Date.now() / 1000);
   const oldest = now - hours * 60 * 60;
 
@@ -49,9 +50,11 @@ export async function fetchEscalationMessages(hours: number = 24, fetchThreads: 
       }
 
       messages.push(escalation);
+      if (maxMessages && messages.length >= maxMessages) break;
     }
 
     cursor = response.response_metadata?.next_cursor;
+    if (maxMessages && messages.length >= maxMessages) break;
   } while (cursor);
 
   return messages;
