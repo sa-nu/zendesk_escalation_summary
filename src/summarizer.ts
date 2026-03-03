@@ -23,11 +23,12 @@ export async function summarizeEscalations(
 
   const formattedMessages = messages
     .map((msg, i) => {
-      let text = `[${i + 1}] ${msg.postedAt} (${msg.username}): ${msg.text}`;
+      const msgText = msg.text.length > 500 ? msg.text.substring(0, 500) + "…" : msg.text;
+      let text = `[${i + 1}] ${msg.postedAt} (${msg.username}): ${msgText}`;
       if (msg.threadReplies && msg.threadReplies.length > 0) {
         text += `\n  スレッド返信 (${msg.threadReplies.length}件):`;
-        for (const reply of msg.threadReplies.slice(0, 5)) {
-          text += `\n    - ${reply.substring(0, 300)}`;
+        for (const reply of msg.threadReplies.slice(0, 3)) {
+          text += `\n    - ${reply.substring(0, 200)}`;
         }
       }
       return text;
@@ -70,7 +71,7 @@ ${formattedMessages}
 
   const response = await anthropic.messages.create({
     model: "claude-opus-4-6",
-    max_tokens: 4000,
+    max_tokens: 8000,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -85,16 +86,28 @@ ${formattedMessages}
       date,
       totalCount: messages.length,
       summaryText: textContent.text,
+      periodLabel,
     };
   }
 
-  const parsed = JSON.parse(jsonMatch[0]) as {
+  let parsed: {
     summaryText: string;
     categories?: {
       name: string;
       items: { description: string; messageNumber: number }[];
     }[];
   };
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch (e) {
+    console.error("JSON parse error:", e);
+    return {
+      date,
+      totalCount: messages.length,
+      summaryText: textContent.text.substring(0, 3000),
+      periodLabel,
+    };
+  }
 
   // メッセージ番号からpermalinkを解決してSlackリンク付きのitemsに変換
   const categories: SummaryCategory[] | undefined = parsed.categories?.map((cat) => ({
