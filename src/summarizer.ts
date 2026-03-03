@@ -6,11 +6,13 @@ const anthropic = new Anthropic();
 /**
  * Claude APIでエスカレーションメッセージを要約する。
  * @param periodLabel 期間ラベル（デフォルト: "本日"）。週次の場合は "今週" を指定。
+ * @param model 使用するClaudeモデル（デフォルト: "claude-opus-4-6"）
  */
 export async function summarizeEscalations(
   messages: EscalationMessage[],
   date: string,
   periodLabel: string = "本日",
+  model: string = "claude-opus-4-6",
 ): Promise<EscalationSummary> {
   if (messages.length === 0) {
     return {
@@ -70,7 +72,7 @@ ${formattedMessages}
 - JSONのみを出力してください`;
 
   const response = await anthropic.messages.create({
-    model: "claude-opus-4-6",
+    model: model as "claude-opus-4-6" | "claude-sonnet-4-6",
     max_tokens: 8000,
     messages: [{ role: "user", content: prompt }],
   });

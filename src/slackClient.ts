@@ -7,10 +7,11 @@ const channelId = process.env.SLACK_CHANNEL_ID!;
 
 /**
  * #2h_zendesk_escalation から指定時間内のメッセージを取得する。
- * ページネーション対応。スレッド返信も取得。
+ * ページネーション対応。
  * @param hours 取得対象の時間範囲（デフォルト: 24時間）
+ * @param fetchThreads スレッド返信を取得するか（デフォルト: true）
  */
-export async function fetchEscalationMessages(hours: number = 24): Promise<EscalationMessage[]> {
+export async function fetchEscalationMessages(hours: number = 24, fetchThreads: boolean = true): Promise<EscalationMessage[]> {
   const now = Math.floor(Date.now() / 1000);
   const oldest = now - hours * 60 * 60;
 
@@ -43,7 +44,7 @@ export async function fetchEscalationMessages(hours: number = 24): Promise<Escal
         permalink: `https://slack.com/archives/${channelId}/p${tsForUrl}`,
       };
 
-      if (escalation.replyCount > 0) {
+      if (fetchThreads && escalation.replyCount > 0) {
         escalation.threadReplies = await fetchThreadReplies(msg.ts);
       }
 

@@ -70,10 +70,10 @@ export async function runWeeklySummary(): Promise<{
   console.log(`[${date}] 週次エスカレーションサマリー生成を開始...`);
 
   try {
-    const messages = await fetchEscalationMessages(168); // 7日 = 168時間
+    const messages = await fetchEscalationMessages(168, false); // 7日、スレッド返信はスキップ
     console.log(`  取得メッセージ数: ${messages.length}`);
 
-    const summary = await summarizeEscalations(messages, date, "今週");
+    const summary = await summarizeEscalations(messages, date, "今週", "claude-sonnet-4-6");
     console.log(`  サマリー生成完了`);
 
     const blocks = formatSummaryBlocks(summary);
