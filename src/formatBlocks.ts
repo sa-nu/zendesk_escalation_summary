@@ -50,7 +50,7 @@ export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: summary.summaryText,
+        text: summary.summaryText.substring(0, 3000),
       },
     },
   ];
@@ -67,14 +67,22 @@ export function formatSummaryBlocks(summary: EscalationSummary): KnownBlock[] {
 
     for (const category of summary.categories) {
       const itemList = category.items.map((item) => `  - ${item}`).join("\n");
+      let sectionText = `*${category.name}* (${category.count}件)\n${itemList}`;
+      // Slack mrkdwn sectionの文字数上限は3000
+      if (sectionText.length > 3000) {
+        sectionText = sectionText.substring(0, 2997) + "…";
+      }
 
       blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*${category.name}* (${category.count}件)\n${itemList}`,
+          text: sectionText,
         },
       });
+
+      // Slack Block Kitの上限は50ブロック
+      if (blocks.length >= 48) break;
     }
   }
 
