@@ -25,7 +25,8 @@ export async function summarizeEscalations(
 
   const formattedMessages = messages
     .map((msg, i) => {
-      const msgText = msg.text.length > 500 ? msg.text.substring(0, 500) + "…" : msg.text;
+      const maxLen = periodLabel === "今週" ? 200 : 500;
+      const msgText = msg.text.length > maxLen ? msg.text.substring(0, maxLen) + "…" : msg.text;
       let text = `[${i + 1}] ${msg.postedAt} (${msg.username}): ${msgText}`;
       if (msg.threadReplies && msg.threadReplies.length > 0) {
         text += `\n  スレッド返信 (${msg.threadReplies.length}件):`;
@@ -73,7 +74,7 @@ ${formattedMessages}
 
   const response = await anthropic.messages.create({
     model: model as "claude-opus-4-6" | "claude-sonnet-4-6",
-    max_tokens: 8000,
+    max_tokens: periodLabel === "今週" ? 4000 : 8000,
     messages: [{ role: "user", content: prompt }],
   });
 
